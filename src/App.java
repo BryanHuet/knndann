@@ -1,9 +1,11 @@
-import org.ejml.simple.*;
 
+import jeigen.DenseMatrix;
+import static jeigen.Shortcuts.*;
 public class App {
     public static void main(String[] args) throws Exception {
-        System.out.println("Hello, World!");
-        SimpleMatrix m = new SimpleMatrix(3, 3);
-        System.out.println(m);
+        System.out.println("------------------");
+        DenseMatrix m = new DenseMatrix( new double[][]{{1,1,1},{1,-1,1},{1,1,1}} );
+
+        System.out.println(m.mul(2));
     }
 }
