@@ -6,8 +6,11 @@ import java.util.*;
 public class Dann{
 
         
-        List<Point> data;
+        static List<Point> data;
         Point x0;
+        static int N;
+        static int J;
+
 
         public Dann(){}
 
@@ -16,7 +19,20 @@ public class Dann{
                 return Winvert.mult(B.mult(Winvert));
         }
 
+        public static DenseMatrix B(Point x0, DenseMatrix E){
+                DenseMatrix B= DenseMatrix.eye(3);
+                long pi=1;
+                for (int j=0; j< J;j++){
+                        DenseMatrix distance = data.get(j).distance(x0).toMatrix();
+                        B= distance.mmul(distance.t());
+                }
+                return B;
+        }
 
+        public static DenseMatrix W(Point x0, DenseMatrix E){
+                DenseMatrix W= DenseMatrix.eye(3);
+                return W;
+        }
 
 
 
