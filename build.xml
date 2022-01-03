@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="knndann" default="main" basedir=".">
+
+
+    <!-- Definition des dossiers, utilisable avec ${} -->
+    <property name="src.dir" location="src" />
+    <property name="build.dir" location="build/classes" />
+    <property name="libs.dir" location="../knndann/lib" />
+    <property name="dist.dir" location="dist/jar" />
+    <property name="docs.dir" location="doc" />
+
+    <!-- Noms spécifiques -->
+
+    <property name="jar.name" value="application"/>
+    <property name="main.name" value="App"/>
+
+
+    <!-- Definition du classpath -->
+    <path id="build-classpath">
+        <fileset dir="${libs.dir}">
+            <include name="*.jar" />
+        </fileset>
+    </path>
+
+    <!-- Clean up du projet -->
+    <target name="clean">
+        <delete dir="${build.dir}" />
+        <delete dir="${dist.dir}" />
+    </target>
+
+    <!-- Creation des dossier -->
+    <target name="makedir">
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${docs.dir}" />
+        <mkdir dir="${dist.dir}" />
+    </target>
+
+    <target name="compile" depends="clean, makedir">
+        <javac srcdir="${src.dir}" destdir="${build.dir}">
+            <classpath refid="build-classpath" />
+        </javac>
+    </target>
+
+
+    <!-- Creation du jar  -->
+    <target name="jar" depends="compile">
+        <jar destfile="${dist.dir}\${jar.name}.jar" basedir="${build.dir}">
+            <zipgroupfileset dir="${libs.dir}" includes="**/*.jar" />
+            <manifest>
+                <attribute name="Main-Class" value="${main.name}" />
+                <attribute name="Build-Path" value="${build-classpath}" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="main" depends="compile, jar, run">
+    </target>
+
+    <target name="run" depends="jar">
+        <java jar="dist/jar/${jar.name}.jar" fork="true"/>
+    </target>
+
+</project>
