@@ -14,7 +14,9 @@ public class Iris {
         this.petal_width = petal_width;
         this.classe = classe;
     }
-
+    public Iris(float sepal_length, float sepal_width, float petal_length, float petal_width) {
+        this(sepal_length,sepal_width,petal_length,petal_width,null);
+    }
     public float getSepal_length() {
         return sepal_length;
     }
