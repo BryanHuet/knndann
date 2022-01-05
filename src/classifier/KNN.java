@@ -5,11 +5,11 @@ import java.util.*;
 
 public class KNN {
 
-    public static String majorClasse(List<Result> list){
+    public static String majorClasse(List<Result> list,int k){
         String soluce="";
         HashMap<String, Integer> dico = new HashMap<>();
-        for(Result r : list){
-            String classe = r.getClasse();
+        for(int i=0;i<k;i++){
+            String classe = list.get(i).getClasse();
             if(dico.containsKey(classe)){
                 dico.put(classe,dico.get(classe)+1);
             }else{
@@ -42,7 +42,7 @@ public class KNN {
         for(int x =0; x<k;x++){
             System.out.println(result.get(x).getClasse() + " " + result.get(x).getDistance());
         }*/
-        return majorClasse(result);
+        return majorClasse(result,k);
     }
 
 
