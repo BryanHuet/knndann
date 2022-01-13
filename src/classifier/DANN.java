@@ -41,11 +41,40 @@ public class DANN {
          double[] result = new double[2];
          double[] di=di(xi,x0);
          double h = hi(di);
-         result[0]= di[0]<h ? Math.pow((1-Math.pow(di[0]/h,3))*di[0],3)
-                            : Math.pow((1-Math.pow(di[0]/h,3)),3);
-         result[1]= di[1]<h ? Math.pow((1-Math.pow(di[1]/h,3))*di[1],3)
-                : Math.pow((1-Math.pow(di[1]/h,3)),3);
+         if (di.length > h){
+             result[0]=0;
+             result[1]=0;
+             return result;
+         }
+         result[0]= Math.pow((1-Math.pow(di[0]/h,3)),3);
+         result[1]= Math.pow((1-Math.pow(di[1]/h,3)),3);
          return result;
+    }
+
+    public double[] pj(List<Iris> data,Iris x0, int j){
+        double[] result = new double[2];
+        double[] sumj = {0,0};
+        double[] sumtotal= {0,0};
+
+        for(int i=0;i<data.toArray().length; i++){
+            if (data.get(i).getClasse()=="j"){
+                sumj[0] += k(x0,data.get(i))[0];
+                sumj[1] += k(x0,data.get(i))[1];
+            }
+        }
+        for(int i=0;i<data.toArray().length; i++){
+            sumtotal[0] += k(x0,data.get(i))[0];
+            sumtotal[1] += k(x0,data.get(i))[1];
+        }
+        result[0]=sumj[0]/sumtotal[0];
+        result[1]=sumj[1]/sumtotal[1];
+        return result;
+    }
+
+    public DenseMatrix B(Iris x0,double h){
+        int J=2;
+        DenseMatrix B=new DenseMatrix(1,1);
+        return B;
     }
 
 
