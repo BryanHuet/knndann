@@ -37,15 +37,14 @@ public class DataSet {
     public DenseMatrix prepareData(ArrayList<ArrayList<String>> donneesExtraites, int indexCible){
         DenseMatrix enMatrice = new DenseMatrix(donneesExtraites.size(), donneesExtraites.get(0).size());
         // Stockage des classes temporairement afin de les convertir en entier
-        HashMap<String, Integer> classes = new HashMap<>();
-        int compteur=0;
+        HashMap<String, Integer> classeCouranteDetectee = new HashMap<>();
         for(int i=0; i<donneesExtraites.size(); i++){
             //System.out.println("di: "+donneesExtraites.get(i));
             for(int j=0; j<donneesExtraites.get(i).size(); j++){
                 //System.out.println("valeur: "+donneesExtraites.get(i).get(j));
                 if(j == indexCible){
-                    if(!classes.containsKey(donneesExtraites.get(i).get(j))){
-                        if(classes.containsValue(compteur)){
+                    if(!classeCouranteDetectee.containsKey(donneesExtraites.get(i).get(j))){
+                        if(classeCouranteDetectee.containsValue(compteur)){
                             compteur++;
                         }
                         classes.put(donneesExtraites.get(i).get(j), compteur);

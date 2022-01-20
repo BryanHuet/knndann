@@ -3,7 +3,6 @@ import static jeigen.Shortcuts.*;
 import java.util.ArrayList;
 
 import data.DataSet;
-import data.Point;
 import jeigen.*;
 
 public class DANN {
@@ -28,7 +27,7 @@ public class DANN {
     public DANN(DataSet dataset, int k, int km, int epsilon){
         this.dataSet = dataset;
         this.k = k;
-        this.km = km; // 50 : Selon le livre 
+        this.km = Math.max(km, 50); // 50 : Selon le livre 
         this.epsilon = epsilon; // 1 : Valeur fonctionnant bien dans la plupart des cas selon le papier
     }
 
@@ -52,7 +51,11 @@ public class DANN {
         // On récupère d'abord le nombre de features de notre point
         int nombreDeFeatures = x0.cols;
         ArrayList<Double> distances = new ArrayList<>();
-        
+        for(int i=0; i<this.getDataSet().getM(); i++){
+            for(int j=0; i<this.getDataSet().getN(); j++){
+                 valeur = this.dataSet.getX_Train().get(i,j);
+            }
+        }
         // On initialise les matrices sigma, B, W nécessaires pour calculer la métrique.
         // Soit B la matrice de covariance des "between class" et W la matrice de covariance des "within class" 
         // Elles ont une taille de (nombre_de_features x nombre_de_features) et sont remplis de 0.
@@ -61,18 +64,22 @@ public class DANN {
         DenseMatrix W = DenseMatrix.zeros(nombreDeFeatures,nombreDeFeatures);
         double sommeDesPoids = 0.0;
         // ...
-        ArrayList<Double> plusProchesVoisins = new ArrayList<>();
-        // On effectue un tri et on sélectionne les km voisins 
+        ArrayList<DenseMatrix> plusProchesVoisins = new ArrayList<>();
+        // On effectue un tri et on sélectionne les km voisins
+        /*for()
+        plusProchesVoisins.add(distance[...]);*/
+        DenseMatrix voisinage;
         // ...
-        // Moyenne dans x
-        double xMean = 0.;
-        /*for(Point example : dataSet.getX()){
-            xMean += example.get;
-        }*/
+        // Moyenne de chaque colonne dans x
+        DenseMatrix xMean = voisinage.meanOverCols();
         // Moyenne dans x pour la classe j
-        double xjMean = 0.;
+        DenseMatrix xjMean = ;
         W = W.mexp();
         B = W.mmul(B);
         sigma = W.mmul(B.add(epsilon).mmul(sigma)).mmul(W);
+    }
+
+    public DataSet getDataSet(){
+        return this.dataSet;
     }
 }
