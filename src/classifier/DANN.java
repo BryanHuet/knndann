@@ -1,4 +1,5 @@
 package classifier;
+import elements.Element;
 import elements.Iris;
 import jeigen.DenseMatrix;
 
@@ -6,29 +7,44 @@ import java.util.*;
 
 public class DANN {
 
+    public static int NB_PARAMETERS = 4;
+
     public static String majorClasse(List<Result> list, int k){
         String soluce="";
         return soluce;
     }
 
-    public static double[] di(Iris xi, Iris x0){
-        double[] result = new double[2];
-        double distancePetal;
-        double distanceSepal;
-
-        distancePetal = Math.pow(xi.getPetal_length()-x0.getPetal_length(),2);
-        distancePetal += Math.pow(xi.getPetal_width()- x0.getPetal_width(), 2);
-        distanceSepal = Math.pow(xi.getSepal_length()- x0.getPetal_length(), 2);
-        distanceSepal += Math.pow(xi.getSepal_width()- x0.getSepal_width(), 2);
-
-        result[0]=distancePetal;
-        result[1]=distanceSepal;
-
-        return result;
+    /**
+     *
+     * @param xi
+     * @param x0
+     * @return double,
+     * Calcul la distance euclidienne entre le vecteur xi et x0.
+     * Correspond à la formule di du point (6)
+     * */
+    public static double distanceEuclidienne(Element xi, Element x0){
+        double result=0;
+        DenseMatrix calcul = xi.getVector().sub(x0.getVector());
+        calcul = calcul.mul(calcul);
+        calcul = calcul.sumOverCols();
+        result = calcul.getValues()[0];
+        return Math.sqrt(result);
     }
 
-    public static double hi(double[] di){
+    /**
+     *
+     * @param elements
+     * @return double
+     * Correspond à la formule h du point (6)
+     */
+    public static double max(Element x0,ArrayList<Element> elements){
         double h=-100000000;
+        ArrayList<Double> di = new ArrayList<>();
+
+        for(Element e: elements){
+            di.add(distanceEuclidienne(e,x0));
+        }
+
         for (double v : di) {
             if (h < v) {
                 h = v;
@@ -37,44 +53,42 @@ public class DANN {
         return h;
     }
 
-    public static double[] k(Iris x0, Iris xi){
-         double[] result = new double[2];
-         double[] di=di(xi,x0);
-         double h = hi(di);
-         if (di.length > h){
-             result[0]=0;
-             result[1]=0;
-             return result;
-         }
-         result[0]= Math.pow((1-Math.pow(di[0]/h,3)),3);
-         result[1]= Math.pow((1-Math.pow(di[1]/h,3)),3);
+    /**
+     *
+     * @param xi
+     * @param x0
+     * @param h
+     * @return Matrice
+     * Correspond à la formule k du point (7)
+     *//*
+    public static DenseMatrix weights(Element xi, Element x0, double h){
+         DenseMatrix result = DenseMatrix.eye(NB_PARAMETERS);
+         double value = Math.pow(1 - (Math.pow(distanceEuclidienne(xi,x0)/h,3)),3);
+         result = result.mul(value);
          return result;
+    }*/
+    public static double weights(Element xi, Element x0, double h){
+        return Math.pow(1 - (Math.pow(distanceEuclidienne(xi,x0)/h,3)),3);
     }
 
-    public double[] pj(List<Iris> data,Iris x0, int j){
-        double[] result = new double[2];
-        double[] sumj = {0,0};
-        double[] sumtotal= {0,0};
-
-        for(int i=0;i<data.toArray().length; i++){
-            if (data.get(i).getClasse()=="j"){
-                sumj[0] += k(x0,data.get(i))[0];
-                sumj[1] += k(x0,data.get(i))[1];
+    /**
+     *
+     * @param x0
+     * @param elementNear
+     * @param j
+     * @return double
+     * Correspond à la formule pj du point (8)
+     */
+    public double pj(Element x0, ArrayList<Element> elementNear, int j){
+        double numerator=0;
+        double denominator=1;
+        for(Element e1: elementNear){
+            if (e1.getClasse()==j){
+                numerator+=weights(e1,x0,max(x0,elementNear));
             }
+            denominator+=weights(e1,x0,max(x0,elementNear));
         }
-        for(int i=0;i<data.toArray().length; i++){
-            sumtotal[0] += k(x0,data.get(i))[0];
-            sumtotal[1] += k(x0,data.get(i))[1];
-        }
-        result[0]=sumj[0]/sumtotal[0];
-        result[1]=sumj[1]/sumtotal[1];
-        return result;
-    }
-
-    public DenseMatrix B(Iris x0,double h){
-        int J=2;
-        DenseMatrix B=new DenseMatrix(1,1);
-        return B;
+        return numerator/denominator;
     }
 
 

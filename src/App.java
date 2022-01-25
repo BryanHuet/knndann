@@ -1,6 +1,7 @@
-import classifier.KNN;
+import classifier.DANN;
 import elements.DataIrisLecture;
 import elements.Iris;
+import elements.Element;
 import jeigen.DenseMatrix;
 
 import java.util.*;
@@ -13,11 +14,14 @@ public class App {
 
         int k = 3;
 
-        DenseMatrix m = new DenseMatrix( new double[][]{{1,1,1},{1,-1,1},{1,1,1}} );
+        HashSet<Element> know_iris = DataIrisLecture.proceed("data/iris.data");
+        DenseMatrix query = new DenseMatrix( new double[][]{{3.6, 1.4, 5.5, 0.2}});
+        Element A = new Element(new DenseMatrix( new double[][]{{1, 1, 1, 1}}),0);
+        Element B = new Element(new DenseMatrix( new double[][]{{3, 3, 3, 3}}),0);
 
-        HashSet<Iris> know_iris = DataIrisLecture.proceed("data/iris.data");
-        Iris query = new Iris(3.6f,1.4f,5.5f, 0.2f);
+        System.out.println(DANN.distanceEuclidienne(A,B));
 
-        System.out.println(KNN.proceed(query,3,know_iris));
+
+
     }
 }
