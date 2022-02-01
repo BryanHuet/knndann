@@ -2,8 +2,8 @@ package classifier;
 
 public class Result{
     double distance;
-    String classe;
-    public Result(double distance, String classe){
+    int classe;
+    public Result(double distance, int classe){
         this.distance=distance;
         this.classe=classe;
     }
@@ -12,7 +12,7 @@ public class Result{
         return distance;
     }
 
-    public String getClasse() {
+    public int getClasse() {
         return classe;
     }
 }

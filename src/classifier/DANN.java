@@ -1,16 +1,16 @@
 package classifier;
 import elements.Element;
-import elements.Iris;
 import jeigen.DenseMatrix;
 
 import java.util.*;
 
-import static jeigen.DenseMatrix.ones;
 import static jeigen.DenseMatrix.zeros;
 
 public class DANN {
 
     public static int NB_PARAMETERS = 4;
+    public static int NB_CLASSES = 3;
+    public static double EPSILON = 1.0;
 
     public static String majorClasse(List<Result> list, int k){
         String soluce="";
@@ -98,7 +98,7 @@ public class DANN {
         DenseMatrix moy = zeros(1,NB_PARAMETERS);
         for (Element e: elementNear){
             if (e.getClasse()==j){
-                moy.add(e.getVector());
+                moy = moy.add(e.getVector());
             }
         }
         return  moy.div(elementNear.size());
@@ -113,11 +113,9 @@ public class DANN {
 
     public static DenseMatrix B(ArrayList<Element> elementNear, Element x0){
         DenseMatrix matrice = zeros(NB_PARAMETERS,NB_PARAMETERS);
-
-        for(int j=0; j<NB_PARAMETERS; j++){
+        for(int j=0; j<NB_CLASSES; j++){
             double pj = pj(x0,elementNear,j);
             DenseMatrix moy = moyenneX(elementNear).sub(moyenneXj(elementNear,j));
-
             moy = moy.t().mmul(moy);
             matrice = matrice.add(moy.mul(pj));
         }
@@ -127,7 +125,7 @@ public class DANN {
     public static DenseMatrix W(ArrayList<Element> elementNear, Element x0){
         DenseMatrix matrice = zeros(NB_PARAMETERS,NB_PARAMETERS);
         double total_weigth=0;
-        for(int j=0;j<NB_PARAMETERS;j++){
+        for(int j=0;j<NB_CLASSES;j++){
             for (Element e: elementNear) {
                 if(e.getClasse()==j){
                     DenseMatrix current = e.getVector().sub(moyenneXj(elementNear,j));
@@ -142,18 +140,66 @@ public class DANN {
         return matrice.div(total_weigth);
     }
 
+    public static double DANN_distance(Element x0, Element x, DenseMatrix sigma){
+        DenseMatrix difference = x0.getVector().sub(x.getVector());
+        return (difference.mmul(sigma)).mmul(difference.t()).getValues()[0];
+    }
 
-    public static String proceed(Iris query, int k, HashSet<Iris> data){
+    public static ArrayList<Element> nearest_neighbor(Element x0, DenseMatrix sigma, HashSet<Element> data, int k){
+        ArrayList<Element> near = new ArrayList<>();
+        TreeMap<Double, Element> map = new TreeMap<>();
+        for(Element e: data){
+            map.put(DANN_distance(x0,e,sigma),e);
+        }
+        for (int i=0;i<k;i++){
+            near.add(map.pollFirstEntry().getValue());
+        }
+        return near;
+    }
 
+    /**
+     *
+     * @param list
+     * @param k
+     * @return
+     * Returne la classe majoritaire dans la liste d'element.
+     */
+    public static int majorClasseD(List<Element> list,int k) {
+        int soluce = -1;
+        HashMap<Integer, Integer> dico = new HashMap<>();
+        for (int i = 0; i < k; i++) {
+            int classe = list.get(i).getClasse();
+            if (dico.containsKey(classe)) {
+                dico.put(classe, dico.get(classe) + 1);
+            } else {
+                dico.put(classe, 1);
+            }
+        }
+        for (Map.Entry<Integer, Integer> entry : dico.entrySet()) {
+            if (entry.getValue().equals(Collections.max(dico.values()))) {
+                soluce = entry.getKey();
+            }
+        }
+        return soluce;
+    }
+    public static int proceed(Element query, int k, int nb_iteration, HashSet<Element> data){
 
-        double h=-1000;
+        DenseMatrix sigma = DenseMatrix.eye(4);
 
+        ArrayList<Element> near = nearest_neighbor(query,sigma,data,k);
 
+        for(int i=0; i<nb_iteration;i++){
+            DenseMatrix B = DANN.B(near,query);
+            DenseMatrix W = DANN.W(near,query);
 
-        /*
-        for(int x =0; x<k;x++){
-            System.out.println(result.get(x).getClasse() + " " + result.get(x).getDistance());
-        }*/
-        return "";
+            sigma = W.mmul(
+                    W.mmul(B.mmul(W)).add(DenseMatrix.eye(4).mul(EPSILON))
+            ).mmul(W);
+
+            near = nearest_neighbor(query,sigma,data,k);
+        }
+
+        return majorClasseD(near,3);
+
     }
 }

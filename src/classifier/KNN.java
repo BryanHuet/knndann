@@ -1,41 +1,43 @@
 package classifier;
-import elements.Iris;
+import elements.Element;
+import jeigen.DenseMatrix;
 
 import java.util.*;
 
 public class KNN {
 
-    public static String majorClasse(List<Result> list,int k){
-        String soluce="";
-        HashMap<String, Integer> dico = new HashMap<>();
+    public static int majorClasse(List<Result> list,int k){
+        int soluce=-1;
+        HashMap<Integer, Integer> dico = new HashMap<>();
         for(int i=0;i<k;i++){
-            String classe = list.get(i).getClasse();
+            int classe = list.get(i).getClasse();
             if(dico.containsKey(classe)){
                 dico.put(classe,dico.get(classe)+1);
             }else{
                 dico.put(classe,1);
             }
         }
-        for (Map.Entry<String, Integer> entry : dico.entrySet()){
+        for (Map.Entry<Integer, Integer> entry : dico.entrySet()){
             if(entry.getValue().equals(Collections.max(dico.values()))){
                 soluce=entry.getKey();
             }
         }
         return soluce;
     }
+    public static double distanceEuclidienne(Element xi, Element x0){
+        double result=0;
+        DenseMatrix calcul = xi.getVector().sub(x0.getVector());
+        calcul = calcul.mul(calcul);
+        calcul = calcul.sumOverCols();
+        result = calcul.getValues()[0];
+        return Math.sqrt(result);
+    }
 
-    public static String proceed(Iris query,int k, HashSet<Iris> data){
+    public static int proceed(Element query, int k, HashSet<Element> data){
         List<Result> result = new ArrayList<>();
 
-        for(Iris iris : data){
-            double dist;
-
-            dist = Math.pow(iris.getPetal_length()-query.getPetal_length(),2);
-            dist += Math.pow(iris.getPetal_width()- query.getPetal_width(), 2);
-            dist += Math.pow(iris.getSepal_length()- query.getPetal_length(), 2);
-            dist += Math.pow(iris.getSepal_width()- query.getSepal_width(), 2);
-            double distance = Math.sqrt(dist);
-            result.add(new Result(distance, iris.getClasse()));
+        for(Element e : data){
+            result.add(new Result(distanceEuclidienne(e,query), e.getClasse()));
         }
         result.sort(new DistanceComparator());
         /*
