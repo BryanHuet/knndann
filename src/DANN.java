@@ -49,22 +49,16 @@ public class DANN {
     public void predict(DenseMatrix x0){
         // Fonction à exécuters autant de fois qu'il y a de points à classifier
         // On récupère d'abord le nombre de features de notre point
-        int nombreDeFeatures = x0.cols;
+        final int nombreDeFeatures = x0.cols;
         ArrayList<Double> distances = new ArrayList<>();
         for(int i=0; i<this.getDataSet().getM(); i++){
             for(int j=0; i<this.getDataSet().getN(); j++){
-                 valeur = this.dataSet.getX_Train().get(i,j);
+                 //valeur = this.dataSet.getX_Train().get(i,j);
             }
         }
-        // On initialise les matrices sigma, B, W nécessaires pour calculer la métrique.
-        // Soit B la matrice de covariance des "between class" et W la matrice de covariance des "within class" 
-        // Elles ont une taille de (nombre_de_features x nombre_de_features) et sont remplis de 0.
-        DenseMatrix sigma = DenseMatrix.eye(nombreDeFeatures);
-        DenseMatrix B = DenseMatrix.zeros(nombreDeFeatures,nombreDeFeatures);
-        DenseMatrix W = DenseMatrix.zeros(nombreDeFeatures,nombreDeFeatures);
-        double sommeDesPoids = 0.0;
         // ...
         ArrayList<DenseMatrix> plusProchesVoisins = new ArrayList<>();
+        
         // On effectue un tri et on sélectionne les km voisins
         /*for()
         plusProchesVoisins.add(distance[...]);*/
@@ -74,9 +68,33 @@ public class DANN {
         DenseMatrix xMean = voisinage.meanOverCols();
         // Moyenne dans x pour la classe j
         DenseMatrix xjMean = ;
+        DenseMatrix J = this.dataSet.getY_Train();
+
+        // On initialise les matrices sigma, B, W nécessaires pour calculer la métrique.
+        // Soit B la matrice de covariance des "between class" et W la matrice de covariance des "within class" 
+        // Elles ont une taille de (nombre_de_features x nombre_de_features) et sont remplis de 0.
+        DenseMatrix sigma = DenseMatrix.eye(nombreDeFeatures);
+        DenseMatrix B = DenseMatrix.zeros(nombreDeFeatures,nombreDeFeatures);
+        DenseMatrix W = DenseMatrix.zeros(nombreDeFeatures,nombreDeFeatures);
+        double sommeDesPoids = 0.0;
+        for(int j=0; j<J.rows; j++){
+
+        }
         W = W.mexp();
         B = W.mmul(B);
-        sigma = W.mmul(B.add(epsilon).mmul(sigma)).mmul(W);
+        sigma = W.mmul(B.add(epsilon).mmul(DenseMatrix.eye(this.dataSet.getN()))).mmul(W);
+    }
+
+    /**
+     * @param x0 le point de référence
+     * @param x1 le point à mesurer
+     * @param sigma la métrique
+     * @return la distance entre x0 et x1
+     */
+    public DenseMatrix distance(DenseMatrix x0, DenseMatrix x1, DenseMatrix sigma){
+        DenseMatrix soustraction = x0.sub(x1);
+        DenseMatrix distance = soustraction.mmul(soustraction.t().mmul(sigma));
+        return distance;
     }
 
     public DataSet getDataSet(){

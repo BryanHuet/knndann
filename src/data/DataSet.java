@@ -43,13 +43,12 @@ public class DataSet {
             for(int j=0; j<donneesExtraites.get(i).size(); j++){
                 //System.out.println("valeur: "+donneesExtraites.get(i).get(j));
                 if(j == indexCible){
-                    if(!classeCouranteDetectee.containsKey(donneesExtraites.get(i).get(j))){
-                        if(classeCouranteDetectee.containsValue(compteur)){
-                            compteur++;
-                        }
-                        classes.put(donneesExtraites.get(i).get(j), compteur);
+                    if(classeCouranteDetectee.containsKey(donneesExtraites.get(i).get(j)) || classeCouranteDetectee.isEmpty()){
+                        String classe = donneesExtraites.get(i).get(j);
+                        classeCouranteDetectee.replace(classe, classeCouranteDetectee.get(classe)+1);
+                        //classes.put(donneesExtraites.get(i).get(j), compteur);
                     }
-                    double classeEnInt = classes.get(donneesExtraites.get(i).get(j));
+                    double classeEnInt = classeCouranteDetectee.get(donneesExtraites.get(i).get(j));
                     enMatrice.set(i, j, classeEnInt);
                 } else {
                     enMatrice.set(i, j, Double.parseDouble(donneesExtraites.get(i).get(j)));

@@ -2,19 +2,27 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import data.DataSet;
-import data.Point;
-import jeigen.DenseMatrix;
 import parser.*;
 
 public class App {
-    // java App "/data/iris.data" 3
     public static void main(String[] args) throws Exception {
+        if(args.length == 0){
+            throw new IllegalArgumentException("Usage : App < chemin fichier > < k >"+"\n"+"ex: java App /data/iris.data 3");
+        }
+        if(args.length != 2){
+            throw new IllegalArgumentException("Le nombre d'arguments est incorrect");
+        }
         Parser numerique = new NumericalParser();
-        String chemin = "D:/Partage/Master/Projet/knndann/data/iris.data"; //"/data/iris.data";//args[0];
+        String chemin = args[0];//"D:/Partage/Master/Projet/knndann/data/iris.data"; //"/data/iris.data";
         ArrayList<ArrayList<String>> data = numerique.parserFichier(chemin);
-        int[] separationDonnees = new int[]{0,50,100}; // 0 - n | n - size
+        int[] separationDonnees;
+        if(data.size()%2 == 0){
+            separationDonnees = new int[]{0,(data.size()/2),data.size()}; // 0 - n | n - size
+        } else {
+            separationDonnees = new int[]{0,(data.size()/2),data.size()}; // 0 - n | n - size
+        }
         DataSet bdd = new DataSet(data, separationDonnees, 4);
-        int k = 1;//Integer.parseInt(args[1]);
+        int k = Integer.parseInt(args[1]);
         if(k < 1){
             throw new ArithmeticException("k doit être un nombre supérieur à 1");
         }
