@@ -21,7 +21,7 @@ public class Element {
     }
 
     public int getClasse() {
-        return classe;
+        return this.classe;
     }
 
     public void setClasse(int classe) {

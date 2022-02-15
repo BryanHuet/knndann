@@ -140,6 +140,25 @@ public class DANN {
         return matrice.div(total_weigth);
     }
 
+    public static DenseMatrix Wdiag(DenseMatrix W){
+        W = DenseMatrix.eye((int) (W.shape().getValues()[0])).mul(W);
+        W = W.sqrt();
+        W = W.recpr();
+        for(int i=0; i<W.shape().getValues()[0];i++){
+            for(int j=0; j< W.shape().getValues()[0];j++){
+                if(W.get(i,j)>1000000){
+                    W.set(i,j,0);
+                }
+                if(i!=j){
+                    W.set(i,j,0);
+                }
+            }
+        }
+        //W = W.sub(1);
+        return W;
+    }
+
+
     public static double DANN_distance(Element x0, Element x, DenseMatrix sigma){
         DenseMatrix difference = x0.getVector().sub(x.getVector());
         return (difference.mmul(sigma)).mmul(difference.t()).getValues()[0];
@@ -165,26 +184,38 @@ public class DANN {
      * Returne la classe majoritaire dans la liste d'element.
      */
     public static int majorClasseD(List<Element> list,int k) {
-        int soluce = -1;
-        HashMap<Integer, Integer> dico = new HashMap<>();
-        for (int i = 0; i < k; i++) {
-            int classe = list.get(i).getClasse();
+        String soluce = "";
+        HashMap<String, Integer> dico = new HashMap<>();
+
+        for (int i = 0; i < list.size(); i++) {
+
+            String classe = ""+list.get(i).getClasse();
+
             if (dico.containsKey(classe)) {
                 dico.put(classe, dico.get(classe) + 1);
+
             } else {
+
                 dico.put(classe, 1);
             }
         }
-        for (Map.Entry<Integer, Integer> entry : dico.entrySet()) {
-            if (entry.getValue().equals(Collections.max(dico.values()))) {
-                soluce = entry.getKey();
+
+            for (Map.Entry<String, Integer> entry : dico.entrySet()) {
+                System.out.println("DANN classe :"+entry.getKey()+" nb :"+entry.getValue());
+
+                if (entry.getValue().equals(Collections.max(dico.values()))) {
+                    soluce = entry.getKey();
+                }
             }
-        }
-        return soluce;
+
+        return Integer.parseInt(soluce);
     }
+
+
+
     public static int proceed(Element query, int k, int nb_iteration, HashSet<Element> data){
 
-        DenseMatrix sigma = DenseMatrix.eye(4);
+        DenseMatrix sigma = DenseMatrix.eye(NB_PARAMETERS);
 
         ArrayList<Element> near = nearest_neighbor(query,sigma,data,k);
 
@@ -192,13 +223,16 @@ public class DANN {
             DenseMatrix B = DANN.B(near,query);
             DenseMatrix W = DANN.W(near,query);
 
+            W = DANN.Wdiag(W);
+            //B = DenseMatrix.eye((int) (B.shape().getValues()[0])).mul(B);
+
+
             sigma = W.mmul(
-                    W.mmul(B.mmul(W)).add(DenseMatrix.eye(4).mul(EPSILON))
+                    W.mmul(B.mmul(W)).add(DenseMatrix.eye(NB_PARAMETERS).mul(EPSILON))
             ).mmul(W);
 
             near = nearest_neighbor(query,sigma,data,k);
         }
-
         return majorClasseD(near,3);
 
     }

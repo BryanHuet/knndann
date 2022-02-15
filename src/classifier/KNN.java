@@ -7,8 +7,10 @@ import java.util.*;
 public class KNN {
 
     public static int majorClasse(List<Result> list,int k){
+
         int soluce=-1;
         HashMap<Integer, Integer> dico = new HashMap<>();
+
         for(int i=0;i<k;i++){
             int classe = list.get(i).getClasse();
             if(dico.containsKey(classe)){
@@ -17,9 +19,13 @@ public class KNN {
                 dico.put(classe,1);
             }
         }
+
+
         for (Map.Entry<Integer, Integer> entry : dico.entrySet()){
+          System.out.println("KNNN classe :"+entry.getKey()+" nb :"+entry.getValue());
             if(entry.getValue().equals(Collections.max(dico.values()))){
                 soluce=entry.getKey();
+
             }
         }
         return soluce;
@@ -40,10 +46,13 @@ public class KNN {
             result.add(new Result(distanceEuclidienne(e,query), e.getClasse()));
         }
         result.sort(new DistanceComparator());
+
         /*
         for(int x =0; x<k;x++){
             System.out.println(result.get(x).getClasse() + " " + result.get(x).getDistance());
         }*/
+
+
         return majorClasse(result,k);
     }
 
