@@ -41,7 +41,16 @@
         </javac>
     </target>
 
-
+	<!-- Creation de la doc  -->
+	<target name="docs" depends="compile">
+        <javadoc packagenames="src" sourcepath="${src.dir}" destdir="${docs.dir}">
+            <classpath refid="build-classpath" />
+            <fileset dir="${src.dir}">
+                <include name="**" />
+            </fileset>
+        </javadoc>
+    </target>
+    
     <!-- Creation du jar  -->
     <target name="jar" depends="compile">
         <jar destfile="${dist.dir}\${jar.name}.jar" basedir="${build.dir}">
@@ -53,7 +62,7 @@
         </jar>
     </target>
 
-    <target name="main" depends="compile, jar, run">
+    <target name="main" depends="compile, docs, jar, run">
     </target>
 
     <target name="run" depends="jar">
