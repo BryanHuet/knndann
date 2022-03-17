@@ -12,15 +12,25 @@ import static jeigen.Shortcuts.spdiag;
 
 public class App {
 
-
-
     public static void main(String[] args){
 
-        int k = 3;
+        if(args.length == 0){
+            throw new IllegalArgumentException("Usage : App < chemin fichier > < k > < nombre de découpes CV >"+"\n"+"ex: java App /data/iris.data 3 5");
+        }
+        if(args.length != 3){
+            throw new IllegalArgumentException("Le nombre d'arguments est incorrect");
+        }
+
+        int k=Integer.parseInt(args[1]);//3
+
+        if(k < 1){
+            throw new ArithmeticException("k doit être un nombre supérieur à 1");
+        }
 
         String[] classes = {"Iris-setosa","Iris-versicolor","Iris-virginica"};
 
-        HashSet<Element> know_iris = DataIrisLecture.proceed("data/iris.data");
+        String chemin = args[0]; //"data/iris.data"
+        HashSet<Element> know_iris = DataIrisLecture.proceed(chemin); 
 
         DenseMatrix query = new DenseMatrix( new double[][]{{5.0, 1.4, 5.5, 0.2}});
         //DenseMatrix query = new DenseMatrix(new double[][]{{5.6, 3, 4.5, 1.5}});
