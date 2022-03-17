@@ -36,7 +36,7 @@
     </target>
 
     <target name="compile" depends="clean, makedir">
-        <javac srcdir="${src.dir}" destdir="${build.dir}">
+        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="true">
             <classpath refid="build-classpath" />
         </javac>
     </target>
@@ -66,7 +66,11 @@
     </target>
 
     <target name="run" depends="jar">
-        <java jar="dist/jar/${jar.name}.jar" fork="true"/>
+        <java jar="dist/jar/${jar.name}.jar" fork="true">
+            <arg value="${arg0}"/>
+            <arg value="${arg1}"/>
+            <arg value="${arg2}"/>
+        </java>
     </target>
 
 </project>
