@@ -6,6 +6,7 @@ public class Element {
 
     private DenseMatrix vector;
     private int classe;
+    private int predict;
 
     public Element(DenseMatrix vector, int classe){
         this.vector = vector;
@@ -26,5 +27,19 @@ public class Element {
 
     public void setClasse(int classe) {
         this.classe = classe;
+    }
+
+    public int getPredict(){
+        return this.predict;
+    }
+    
+    public void setPredict(int predict){
+        this.predict = predict;
+    }
+
+
+    @Override
+    public String toString(){
+        return "vector :"+this.getVector() +"| classe :"+this.getClasse();
     }
 }

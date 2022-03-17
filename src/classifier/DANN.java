@@ -8,13 +8,31 @@ import static jeigen.DenseMatrix.zeros;
 
 public class DANN {
 
-    public static int NB_PARAMETERS = 4;
-    public static int NB_CLASSES = 3;
     public static double EPSILON = 1.0;
 
-    public static String majorClasse(List<Result> list, int k){
-        String soluce="";
-        return soluce;
+    private int nb_classes;
+    private int nb_parameters;
+    private HashSet<Element> dataset;
+    private int k;
+    private int nb_iteration;
+
+
+    
+    
+    //(Element query, int k, int nb_iteration, int parameters,int class_number,HashSet<Element> data)
+       
+
+    public DANN(HashSet<Element> dataset, int k, int nb_iteration, int nb_parameters, int nb_classes){
+        this.nb_classes=nb_classes;
+        this.nb_parameters=nb_parameters;
+        this.dataset=dataset;
+        this.k=k;
+        this.nb_iteration=nb_iteration;
+
+    }
+
+    public void setDataset(HashSet<Element> dataset){
+        this.dataset = dataset;
     }
 
     /**
@@ -82,7 +100,7 @@ public class DANN {
      * @return double
      * Correspond à la formule pj du point (8)
      */
-    public static double pj(Element x0, ArrayList<Element> elementNear, int j){
+    private double pj(Element x0, ArrayList<Element> elementNear, int j){
         double numerator=0;
         double denominator=1;
         for(Element e1: elementNear){
@@ -94,8 +112,8 @@ public class DANN {
         return numerator/denominator;
     }
 
-    public static DenseMatrix moyenneXj(ArrayList<Element> elementNear,int j){
-        DenseMatrix moy = zeros(1,NB_PARAMETERS);
+    private DenseMatrix moyenneXj(ArrayList<Element> elementNear,int j){
+        DenseMatrix moy = zeros(1,this.nb_parameters);
         for (Element e: elementNear){
             if (e.getClasse()==j){
                 moy = moy.add(e.getVector());
@@ -103,17 +121,17 @@ public class DANN {
         }
         return  moy.div(elementNear.size());
     }
-    public static DenseMatrix moyenneX(ArrayList<Element> elementNear){
-        DenseMatrix moy = zeros(1,NB_PARAMETERS);
+    private DenseMatrix moyenneX(ArrayList<Element> elementNear){
+        DenseMatrix moy = zeros(1,this.nb_parameters);
         for (Element e: elementNear){
                 moy = moy.add(e.getVector());
         }
         return  moy.div(elementNear.size());
     }
 
-    public static DenseMatrix B(ArrayList<Element> elementNear, Element x0){
-        DenseMatrix matrice = zeros(NB_PARAMETERS,NB_PARAMETERS);
-        for(int j=0; j<NB_CLASSES; j++){
+    private DenseMatrix B(ArrayList<Element> elementNear, Element x0){
+        DenseMatrix matrice = zeros(this.nb_parameters,this.nb_parameters);
+        for(int j=0; j<this.nb_classes; j++){
             double pj = pj(x0,elementNear,j);
             DenseMatrix moy = moyenneX(elementNear).sub(moyenneXj(elementNear,j));
             moy = moy.t().mmul(moy);
@@ -122,10 +140,10 @@ public class DANN {
         return matrice;
     }
 
-    public static DenseMatrix W(ArrayList<Element> elementNear, Element x0){
-        DenseMatrix matrice = zeros(NB_PARAMETERS,NB_PARAMETERS);
+    private DenseMatrix W(ArrayList<Element> elementNear, Element x0){
+        DenseMatrix matrice = zeros(this.nb_parameters,this.nb_parameters);
         double total_weigth=0;
-        for(int j=0;j<NB_CLASSES;j++){
+        for(int j=0;j<this.nb_classes;j++){
             for (Element e: elementNear) {
                 if(e.getClasse()==j){
                     DenseMatrix current = e.getVector().sub(moyenneXj(elementNear,j));
@@ -140,7 +158,7 @@ public class DANN {
         return matrice.div(total_weigth);
     }
 
-    public static DenseMatrix Wdiag(DenseMatrix W){
+    private DenseMatrix Wdiag(DenseMatrix W){
         W = DenseMatrix.eye((int) (W.shape().getValues()[0])).mul(W);
         W = W.sqrt();
         W = W.recpr();
@@ -159,19 +177,23 @@ public class DANN {
     }
 
 
-    public static double DANN_distance(Element x0, Element x, DenseMatrix sigma){
+    private double DANN_distance(Element x0, Element x, DenseMatrix sigma){
         DenseMatrix difference = x0.getVector().sub(x.getVector());
         return (difference.mmul(sigma)).mmul(difference.t()).getValues()[0];
     }
 
-    public static ArrayList<Element> nearest_neighbor(Element x0, DenseMatrix sigma, HashSet<Element> data, int k){
+    private ArrayList<Element> nearest_neighbor(Element x0, DenseMatrix sigma){
         ArrayList<Element> near = new ArrayList<>();
         TreeMap<Double, Element> map = new TreeMap<>();
-        for(Element e: data){
-            map.put(DANN_distance(x0,e,sigma),e);
+       
+        for(Element e: this.dataset){
+            map.put(this.DANN_distance(x0,e,sigma),e);
         }
-        for (int i=0;i<k;i++){
-            near.add(map.pollFirstEntry().getValue());
+
+        for (int i=0;i<this.k;i++){
+            if(map.firstEntry()!=null){
+                near.add(map.pollFirstEntry().getValue());
+            }
         }
         return near;
     }
@@ -183,7 +205,7 @@ public class DANN {
      * @return
      * Returne la classe majoritaire dans la liste d'element.
      */
-    public static int majorClasseD(List<Element> list,int k) {
+    private int majorClasseD(List<Element> list,int k) {
         String soluce = "";
         HashMap<String, Integer> dico = new HashMap<>();
 
@@ -201,7 +223,6 @@ public class DANN {
         }
 
             for (Map.Entry<String, Integer> entry : dico.entrySet()) {
-                System.out.println("DANN classe :"+entry.getKey()+" nb :"+entry.getValue());
 
                 if (entry.getValue().equals(Collections.max(dico.values()))) {
                     soluce = entry.getKey();
@@ -213,27 +234,29 @@ public class DANN {
 
 
 
-    public static int proceed(Element query, int k, int nb_iteration, HashSet<Element> data){
+    public int proceed(Element query){
 
-        DenseMatrix sigma = DenseMatrix.eye(NB_PARAMETERS);
 
-        ArrayList<Element> near = nearest_neighbor(query,sigma,data,k);
+        DenseMatrix sigma = DenseMatrix.eye(this.nb_parameters);
+
+        ArrayList<Element> near = nearest_neighbor(query,sigma);
 
         for(int i=0; i<nb_iteration;i++){
-            DenseMatrix B = DANN.B(near,query);
-            DenseMatrix W = DANN.W(near,query);
+            DenseMatrix B = B(near,query);
+            DenseMatrix W = W(near,query);
 
-            W = DANN.Wdiag(W);
+            W = Wdiag(W);
             //B = DenseMatrix.eye((int) (B.shape().getValues()[0])).mul(B);
 
 
             sigma = W.mmul(
-                    W.mmul(B.mmul(W)).add(DenseMatrix.eye(NB_PARAMETERS).mul(EPSILON))
+                    W.mmul(B.mmul(W)).add(DenseMatrix.eye(this.nb_parameters).mul(EPSILON))
             ).mmul(W);
 
-            near = nearest_neighbor(query,sigma,data,k);
+            near = nearest_neighbor(query,sigma);
         }
-        return majorClasseD(near,3);
+
+        return majorClasseD(near,this.nb_classes);
 
     }
 }

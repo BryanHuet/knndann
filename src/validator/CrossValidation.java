@@ -3,9 +3,11 @@ package validator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
-
+import java.util.ArrayList;
+import java.util.Collections;
 import elements.Element;
 import jeigen.DenseMatrix;
+import classifier.*;
 /**
  * Classe implémentant la validation croisée:
  * 
@@ -14,51 +16,71 @@ import jeigen.DenseMatrix;
  */
 public class CrossValidation {
 
-    private HashSet<Element> dataset;
-
-    private HashSet<Element> trainSet;
-    private HashSet<Element> validationSet;
-    private HashSet<Element> testSet;
-
-    private boolean splitTestSet = false;
+    private ArrayList<Element> dataset;
+    private ArrayList<ArrayList<Element>> test_set;
+    private ArrayList<ArrayList<Element>> training_set;
+    private ArrayList<Element> validation_set;
+    private ArrayList<Double> scores;
+    
 
     public CrossValidation(HashSet<Element> dataset){
-        this.dataset = dataset;
-        // On initialise un itérateur pour notre HashSet
-        Iterator<Element> iterator = this.dataset.iterator();
-
-        int i = 0;
-        Element randomElement = null;
-        // On commence par prendre aléatoirement des éléments pour notre X_test/y_test regroupés dans le testSet
-        while (iterator.hasNext()) {
-            int randomNumber = new Random().nextInt(this.dataset.size());
-            randomElement = iterator.next();
-            if (i == randomNumber){
-                this.testSet.add(randomElement);
-                // On omet pas de supprimer l'élément du dataset pour qu'il ne soit pas de nouveau pioché
-                this.dataset.remove(randomElement);
-            }
-            i++;
+        this.dataset = new ArrayList<>(dataset);
+        Collections.shuffle(this.dataset);
+        if (this.dataset.size()%2==1){
+            this.dataset.remove(this.dataset.get(this.dataset.size()-1));
         }
-        this.splitTestSet = true;
+        test_set = new ArrayList<>();
+        training_set = new ArrayList<>();
+        validation_set = new ArrayList<>();
+        scores = new ArrayList<>();
     }
 
-    public void crossValidation(float[] split, int nbDecoupes) throws Exception {
-        if(!this.splitTestSet){
-            throw new Exception("Le testSet n'a pas été séparé du reste des données");
-        }
-        // On initialise un itérateur pour notre HashSet
-        Iterator<Element> iterator = this.dataset.iterator();
+    public ArrayList<Double> getScore(){
+        return this.scores;
+    }
 
-        int i = 0;
-        Element element = null;
-        while (iterator.hasNext()) {
-            element = iterator.next();
-            this.validationSet.add(element);
-            this.dataset.remove(element);
-            i++;
+    public void crossValidation(int nbDecoupes, DANN classifier){
+        int bloc_size = Math.round(dataset.size()/nbDecoupes);
+
+        for (int i=0; i<nbDecoupes;i++){  
+            ArrayList<Element> part1;
+            ArrayList<Element> part2;
+            double scorei=0;
+
+
+            test_set.add(new ArrayList<>(dataset.subList(i*bloc_size,(i*bloc_size)+bloc_size)));
+
+            if(i==0){
+                training_set.add(new ArrayList<>(dataset.subList(bloc_size,dataset.size())));
+            }
+            if(i!=0 && i!=nbDecoupes-1){
+                part1= new ArrayList<>(dataset.subList(0,i*bloc_size));
+                part2 = new ArrayList<>(dataset.subList(i*bloc_size+bloc_size,dataset.size()));
+                part1.addAll(part2);
+                training_set.add(part1);
+            }
+            if(i==nbDecoupes-1){
+                training_set.add(new ArrayList<>(dataset.subList(0,dataset.size()-bloc_size)));
+            }
+            
+
+
+            ///DANN 
+
+            for(Element query: this.test_set.get(i)){
+                classifier.setDataset(new HashSet(this.training_set.get(i)));
+                query.setPredict(classifier.proceed(query));
+                scorei+=(query.getClasse() == query.getPredict() ? 1.0 : 0);
+            }
+            this.scores.add(scorei/bloc_size);
+            
+
+
+
         }
-        this.trainSet = this.dataset;
+
+        
+        
     }
 
     /**
@@ -66,8 +88,8 @@ public class CrossValidation {
      * @return le taux d'éléments bien classés ( en pourcentage )
      */
     public double score(){
-        int goodClass = 0;
+        double score=0;
         
-        return goodClass;
+        return score;
     } // PAS BON CAR HASHSET NON ORDONNE
 }

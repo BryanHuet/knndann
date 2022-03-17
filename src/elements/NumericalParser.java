@@ -3,7 +3,7 @@ package elements;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashSet;
-
+import java.util.HashMap;
 import jeigen.DenseMatrix;
 
 /**
@@ -15,8 +15,16 @@ import jeigen.DenseMatrix;
  * @return l'ensemble des points de notre dataset.
  */
 public class NumericalParser {
-    
-    public static HashSet<Element> proceed(String path_to_file){
+
+    private String path_to_file;
+    private int class_number;
+    private int nb_parameters;
+
+    public NumericalParser(String path_to_file){
+        this.path_to_file = path_to_file;
+    }
+
+    public HashSet<Element> proceed(){
         HashSet<Element> iris_set = new HashSet<>();
         BufferedReader reader;
         try{
@@ -24,26 +32,38 @@ public class NumericalParser {
             String line;
             int label = -1;
             int classNumber = 0;
-            String classeName = "";
+            HashMap<String,Integer> known_class=new HashMap<>();
             double[][] featuresVector;
             while((line = reader.readLine())!= null){
+               
                 String[] attributes = line.split(",");
-                featuresVector = new double[1][attributes.length];
-                for(int j=0; j<attributes.length; j++){
-                    if(j != attributes.length-1){
-                        if(!"".equals(attributes[j])){
-                            featuresVector[0][j] = Double.parseDouble(attributes[j]);
-                        }
-                    } else {
-                        if(attributes[j] != classeName){
-                            classeName = attributes[j];
-                            label += 1;
-                            classNumber += 1;
-                        }
+                featuresVector = new double[1][attributes.length-1];
+                this.nb_parameters = attributes.length-1;
+                if( line.length() >0 && (line.charAt(0)!='%' &&  line.charAt(0)!='@')){
+
+
+                    for(int j=0; j<attributes.length; j++){
+
+                            if(j != attributes.length-1){
+                                if(!"".equals(attributes[j])){
+                                    featuresVector[0][j] = Double.parseDouble(attributes[j]);
+                                }
+                            } else {
+                                if(known_class.containsKey(attributes[j])){
+                                    label=known_class.get(attributes[j]);
+                                }else{
+                                    known_class.put(attributes[j],classNumber);
+                                    classNumber+=1;
+                                    label=classNumber;
+                                }
+                            }
+                        
                     }
+
+                    DenseMatrix vector = new DenseMatrix(featuresVector);
+                    iris_set.add(new Element(vector,label));
+               
                 }
-                DenseMatrix vector = new DenseMatrix(featuresVector);
-                iris_set.add(new Element(vector,label));
             }
         }
         catch (Exception e){
@@ -52,7 +72,10 @@ public class NumericalParser {
         return iris_set;
     }
 
-    public static getClassNumber(){
-        
+    public int getClassNumber(){
+        return this.class_number;
+    }
+    public int getParametersNumber(){
+        return this.nb_parameters;
     }
 }
