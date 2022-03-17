@@ -185,7 +185,6 @@ public class DANN {
     private ArrayList<Element> nearest_neighbor(Element x0, DenseMatrix sigma){
         ArrayList<Element> near = new ArrayList<>();
         TreeMap<Double, Element> map = new TreeMap<>();
-       
         for(Element e: this.dataset){
             map.put(this.DANN_distance(x0,e,sigma),e);
         }
@@ -238,7 +237,6 @@ public class DANN {
 
 
         DenseMatrix sigma = DenseMatrix.eye(this.nb_parameters);
-
         ArrayList<Element> near = nearest_neighbor(query,sigma);
 
         for(int i=0; i<nb_iteration;i++){
@@ -248,11 +246,9 @@ public class DANN {
             W = Wdiag(W);
             //B = DenseMatrix.eye((int) (B.shape().getValues()[0])).mul(B);
 
-
             sigma = W.mmul(
                     W.mmul(B.mmul(W)).add(DenseMatrix.eye(this.nb_parameters).mul(EPSILON))
             ).mmul(W);
-
             near = nearest_neighbor(query,sigma);
         }
 

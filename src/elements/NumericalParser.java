@@ -38,7 +38,7 @@ public class NumericalParser {
                
                 String[] attributes = line.split(",");
                 featuresVector = new double[1][attributes.length-1];
-                this.nb_parameters = attributes.length-1;
+
                 if( line.length() >0 && (line.charAt(0)!='%' &&  line.charAt(0)!='@')){
 
 
@@ -62,9 +62,11 @@ public class NumericalParser {
 
                     DenseMatrix vector = new DenseMatrix(featuresVector);
                     iris_set.add(new Element(vector,label));
-               
+                    this.nb_parameters = attributes.length-1;
                 }
             }
+
+            this.class_number=classNumber;
         }
         catch (Exception e){
             e.printStackTrace();
