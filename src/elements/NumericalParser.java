@@ -12,7 +12,7 @@ import jeigen.DenseMatrix;
  * Ce vecteur est enfin ajouté dans un objet de type Element qui représente un point de notre dataset.
  * La classe d'un point est représenté par un entier naturel, ajouté également dans l'objet Element.
  * @param path_to_file le chemin du fichier à parcourir.
- * @return la liste des points de notre dataset.
+ * @return l'ensemble des points de notre dataset.
  */
 public class NumericalParser {
     
