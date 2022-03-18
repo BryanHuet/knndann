@@ -77,9 +77,16 @@ public class BetaCV2 {
             }
             this.scorePerParameter.put(p, this.score(this.dataset));
         }
+        double max=-100;
+        int maxp=0;
         for(Map.Entry<Integer, Double> pair: this.scorePerParameter.entrySet()){
+            if(pair.getValue()>max){
+                max = pair.getValue();
+                maxp = pair.getKey();
+            }
             System.out.println("p="+pair.getKey()+" ; score="+pair.getValue());
         }
+        System.out.println("Max p : "+maxp + " Meilleur score : "+max);
     }
 
     public double score(ArrayList<Element> dataset){
