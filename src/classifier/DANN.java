@@ -235,23 +235,22 @@ public class DANN {
 
     public int proceed(Element query){
 
-
+        ArrayList<Element> near;
         DenseMatrix sigma = DenseMatrix.eye(this.nb_parameters);
-        ArrayList<Element> near = nearest_neighbor(query,sigma);
 
         for(int i=0; i<nb_iteration;i++){
+            near = nearest_neighbor(query,sigma);
             DenseMatrix B = B(near,query);
             DenseMatrix W = W(near,query);
 
             W = Wdiag(W);
             //B = DenseMatrix.eye((int) (B.shape().getValues()[0])).mul(B);
-
             sigma = W.mmul(
                     W.mmul(B.mmul(W)).add(DenseMatrix.eye(this.nb_parameters).mul(EPSILON))
             ).mmul(W);
-            near = nearest_neighbor(query,sigma);
         }
 
+        near = nearest_neighbor(query,sigma);
         return majorClasseD(near,this.nb_classes);
 
     }
