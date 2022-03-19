@@ -26,7 +26,7 @@ public class DANN {
         this.nb_classes=nb_classes;
         this.nb_parameters=nb_parameters;
         this.dataset=dataset;
-        this.k=Math.max(k,50);
+        this.k=k;
         this.nb_iteration=nb_iteration;
 
     }
@@ -270,6 +270,5 @@ public class DANN {
 
         near = nearest_neighbor(query,sigma);
         return majorClasseD(near,this.nb_classes);
-
     }
 }

@@ -36,7 +36,6 @@ public class CrossValidation {
 
         for (int i=0; i<k;i++){
 
-            double scorei=0;
             ArrayList<Element> datasetcopy = (ArrayList) this.dataset.clone();
 
             validation_set.add(new ArrayList<>(dataset.subList(i*bloc_size,(i*bloc_size)+bloc_size)));
@@ -66,6 +65,21 @@ public class CrossValidation {
             System.out.println("p="+pair.getKey()+" ; score="+pair.getValue());
         }
         System.out.println("Max p : "+maxp + " Meilleur score : "+max);
+        validate(maxp, parametersNumber, classNumber);
+        System.out.println("Validation finale avec "+maxp+":"+this.score(this.dataset));
+    }
+
+    /**
+     * Méthode permettant de valider un modèle avec DANN et le test_set
+     * @param p
+     * @param parametersNumber
+     * @param classNumber
+     */
+    private void validate(int p, int parametersNumber, int classNumber){
+        DANN dann = new DANN(new HashSet(this.dataset), p, 1, parametersNumber, classNumber);
+        for(Element query : this.test_set){
+            query.setPredict(dann.proceed(query));
+        }
     }
 
     public double score(ArrayList<Element> dataset){
