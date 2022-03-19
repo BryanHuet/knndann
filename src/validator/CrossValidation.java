@@ -1,95 +1,78 @@
 package validator;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
+
+import classifier.DANN;
 import elements.Element;
-import jeigen.DenseMatrix;
-import classifier.*;
-/**
- * Classe implémentant la validation croisée:
- * 
- * @param dataset jeu de données à découper
- * @param n : nombre de blocs pour le découpage
- */
+
 public class CrossValidation {
 
     private ArrayList<Element> dataset;
-    private ArrayList<ArrayList<Element>> test_set;
-    private ArrayList<ArrayList<Element>> training_set;
-    private ArrayList<Element> validation_set;
+    private ArrayList<Element> test_set;
     private ArrayList<Double> scores;
-    
+    private HashMap<Integer, Double> scorePerParameter = new HashMap<>();
+
+    private ArrayList<ArrayList<Element>> validation_set;
+    private ArrayList<ArrayList<Element>> training_set;
 
     public CrossValidation(HashSet<Element> dataset){
         this.dataset = new ArrayList<>(dataset);
         Collections.shuffle(this.dataset);
-        if (this.dataset.size()%2==1){
-            this.dataset.remove(this.dataset.get(this.dataset.size()-1));
+        this.scores = new ArrayList<>();
+        this.test_set = new ArrayList<>();
+        this.training_set = new ArrayList<>();
+        this.validation_set = new ArrayList<>();
+    }
+
+    public void crossValidation(int k, int parametersNumber, int classNumber, Set<Integer> parameters){
+        ArrayList<ArrayList<Element>> folds = new ArrayList<>();
+        if(k <= 0){
+            throw new IllegalArgumentException("Le nombre de blocs ne peut pas être <= à 0");
         }
-        test_set = new ArrayList<>();
-        training_set = new ArrayList<>();
-        validation_set = new ArrayList<>();
-        scores = new ArrayList<>();
-    }
+        // partitions : S1 ... Sk
+        int bloc_size = Math.round(dataset.size()/(k+1));
+        test_set = new ArrayList<>(dataset.subList(0,bloc_size));
+        dataset.removeAll(test_set);
 
-    public ArrayList<Double> getScore(){
-        return this.scores;
-    }
+        for (int i=0; i<k;i++){
 
-    public void crossValidation(int nbDecoupes, DANN classifier){
-        int bloc_size = Math.round(dataset.size()/nbDecoupes);
-
-        for (int i=0; i<nbDecoupes;i++){  
-            ArrayList<Element> part1;
-            ArrayList<Element> part2;
             double scorei=0;
+            ArrayList<Element> datasetcopy = (ArrayList) this.dataset.clone();
 
+            validation_set.add(new ArrayList<>(dataset.subList(i*bloc_size,(i*bloc_size)+bloc_size)));
 
-            test_set.add(new ArrayList<>(dataset.subList(i*bloc_size,(i*bloc_size)+bloc_size)));
+            datasetcopy.removeAll(validation_set.get(i));
 
-            if(i==0){
-                training_set.add(new ArrayList<>(dataset.subList(bloc_size,dataset.size())));
-            }
-            if(i!=0 && i!=nbDecoupes-1){
-                part1= new ArrayList<>(dataset.subList(0,i*bloc_size));
-                part2 = new ArrayList<>(dataset.subList(i*bloc_size+bloc_size,dataset.size()));
-                part1.addAll(part2);
-                training_set.add(part1);
-            }
-            if(i==nbDecoupes-1){
-                training_set.add(new ArrayList<>(dataset.subList(0,dataset.size()-bloc_size)));
-            }
-            
-
-
-            ///DANN 
-
-            for(Element query: this.test_set.get(i)){
-                classifier.setDataset(new HashSet(this.training_set.get(i)));
-                query.setPredict(classifier.proceed(query));
-                scorei+=(query.getClasse() == query.getPredict() ? 1.0 : 0);
-            }
-            this.scores.add(scorei/bloc_size);
-            
-
-
-
+            training_set.add(new ArrayList<>(datasetcopy));
         }
-
         
-        
+        // On itère sur les hyperparamètres que l'on souhaite tester
+        for(int p : parameters){
+            for(int i=0; i<k; i++){
+                DANN dann = new DANN(new HashSet(training_set.get(i)), p, 1, parametersNumber, classNumber);
+                for(Element query : validation_set.get(i)){
+                    query.setPredict(dann.proceed(query));
+                }
+            }
+            this.scorePerParameter.put(p, this.score(this.dataset));
+        }
+        double max=-100;
+        int maxp=0;
+        for(Map.Entry<Integer, Double> pair: this.scorePerParameter.entrySet()){
+            if(pair.getValue()>max){
+                max = pair.getValue();
+                maxp = pair.getKey();
+            }
+            System.out.println("p="+pair.getKey()+" ; score="+pair.getValue());
+        }
+        System.out.println("Max p : "+maxp + " Meilleur score : "+max);
     }
 
-    /**
-     * @param testSet l'ensemble des éléments de notre test
-     * @return le taux d'éléments bien classés ( en pourcentage )
-     */
-    public double score(){
-        double score=0;
-        
-        return score;
-    } // PAS BON CAR HASHSET NON ORDONNE
+    public double score(ArrayList<Element> dataset){
+        double goodClass = 0;
+        for(Element element : dataset){
+            goodClass += element.getClasse() == element.getPredict() ? 1.0 : 0;
+        }
+        return goodClass/dataset.size();
+    }
 }

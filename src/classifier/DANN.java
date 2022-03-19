@@ -6,6 +6,9 @@ import java.util.*;
 
 import static jeigen.DenseMatrix.zeros;
 
+/**
+ * Class implémentant l'algorithme DANN
+ */
 public class DANN {
 
     public static double EPSILON = 1.0;
@@ -16,9 +19,6 @@ public class DANN {
     private int k;
     private int nb_iteration;
 
-
-    
-    
     //(Element query, int k, int nb_iteration, int parameters,int class_number,HashSet<Element> data)
        
 
@@ -26,9 +26,20 @@ public class DANN {
         this.nb_classes=nb_classes;
         this.nb_parameters=nb_parameters;
         this.dataset=dataset;
-        this.k=k;
+        this.k=Math.max(k,50);
         this.nb_iteration=nb_iteration;
 
+    }
+
+    /**
+     * 
+     * @param dataset
+     * @param nb_parameters
+     * @param nb_classes
+     * Deuxième constructeur qui ne prend en paramètre uniquement un dataset, le nombre de features et le nombre de classes
+     */
+    public DANN(HashSet<Element> dataset, int nb_parameters, int nb_classes){
+        this(dataset, 50, 1, nb_parameters, nb_classes);
     }
 
     public void setDataset(HashSet<Element> dataset){
@@ -176,7 +187,13 @@ public class DANN {
         return W;
     }
 
-
+    /**
+     * Le point ... du papier 
+     * @param x0 le point à classer ( la requête )
+     * @param x le point de comparaison ( un élément du dataset )
+     * @param sigma la métrique
+     * @return la valeur de la distance
+     */
     private double DANN_distance(Element x0, Element x, DenseMatrix sigma){
         DenseMatrix difference = x0.getVector().sub(x.getVector());
         return (difference.mmul(sigma)).mmul(difference.t()).getValues()[0];
@@ -214,15 +231,12 @@ public class DANN {
 
             if (dico.containsKey(classe)) {
                 dico.put(classe, dico.get(classe) + 1);
-
             } else {
-
                 dico.put(classe, 1);
             }
         }
 
             for (Map.Entry<String, Integer> entry : dico.entrySet()) {
-
                 if (entry.getValue().equals(Collections.max(dico.values()))) {
                     soluce = entry.getKey();
                 }
@@ -232,7 +246,11 @@ public class DANN {
     }
 
 
-
+    /**
+     * Méthode permettant de classifier un élément
+     * @param query 
+     * @return la classe auquel le point appartient
+     */
     public int proceed(Element query){
 
         ArrayList<Element> near;

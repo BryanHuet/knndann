@@ -1,10 +1,8 @@
 import classifier.DANN;
 import classifier.KNN;
-import elements.DataIrisLecture;
 import elements.NumericalParser;
 import elements.Element;
 import jeigen.DenseMatrix;
-import validator.BetaCV2;
 import validator.CrossValidation;
 
 import java.util.*;
@@ -19,7 +17,8 @@ public class App {
 
 
         if(args.length == 0){
-            throw new IllegalArgumentException("Usage : App < chemin fichier > < k > < nombre de découpes CV >"+"\n"+"ex: java App /data/iris.data 3 5");
+            throw new IllegalArgumentException("Usage : App < chemin fichier > < ensemble des k voisins à tester > < nombre de découpes CV >"+
+            "\n"+"ex: java App /data/iris.data 3,5,8,5 5");
         }
         if(args.length != 3){
             throw new IllegalArgumentException("Le nombre d'arguments est incorrect");
@@ -27,13 +26,23 @@ public class App {
 
 
         String chemin = args[0]; 
-        int k = Integer.parseInt(args[1]);//3
+        //int k = Integer.parseInt(args[1]);//3
+
+        ArrayList<Integer> k = new ArrayList<>();
+        for (String s : args[1].split(" ")) {
+            try {
+                int number = Integer.parseInt(s);
+                if(number < 1) {
+                    throw new ArithmeticException("k doit comporter uniquement des nombres >= à 1");
+                }
+                k.add(number);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         int nb_blocs = Integer.parseInt(args[2]);
 
-
-        if(k < 1) {
-            throw new ArithmeticException("k doit être un nombre supérieur à 1");
-        }
         if(nb_blocs < 2){
             throw new IllegalArgumentException("Le nombre de blocs ne peut pas être < à 2");
         }
@@ -45,8 +54,8 @@ public class App {
             throw new IllegalArgumentException("Le nombre de blocs ne peut pas être > à la longueur du dataset/2");
         }
 
-        BetaCV2 bc = new BetaCV2(data);
-        bc.crossValidation(nb_blocs, data_parse.getParametersNumber(), data_parse.getClassNumber(), new HashSet<>(Arrays.asList(1,3,15,25,50,100)));
+        CrossValidation bc = new CrossValidation(data);
+        bc.crossValidation(nb_blocs, data_parse.getParametersNumber(), data_parse.getClassNumber(), new HashSet<>(k));
         
         // DenseMatrix query = new DenseMatrix(new double[][]{{5.6, 3, 4.5, 1.5}});
         // Element x0 = new Element(query,0);
