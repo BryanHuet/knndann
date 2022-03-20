@@ -26,12 +26,9 @@ public class CrossValidation2 {
     }
 
     /**
-     * Méthode lançant la validation croisée
+     * Méthode découpant le dataset en k blocs
      * @param k le nombre de blocs de notre jeu de données
-     * @param parametersNumber le nombre de features dans un vecteur x
-     * @param classNumber le nombre de classes possibles
-     * @param parameters l'ensemble des nombres de voisins
-     * Prépare au début un jeu de test qui sera totalement isolé et préservé pour la validation finale
+     * @return le dataset découpé en k blocs
      */
     public Fold[] folds(int k){
         if(k <= 0){
@@ -63,6 +60,13 @@ public class CrossValidation2 {
         return folds;
     }
 
+    /**
+     * Méthode lançant la validation croisée
+     * @param parametersNumber le nombre de features dans un vecteur x
+     * @param classNumber le nombre de classes possibles
+     * @param parameters l'ensemble des nombres de voisins
+     * Prépare au début un jeu de test qui sera totalement isolé et préservé pour la validation finale
+     */
     public void crossValidation(int parametersNumber, int classNumber, Set<Integer> parameters){
         this.displayFolds();
         double bestScore = 0;
