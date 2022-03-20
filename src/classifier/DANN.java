@@ -21,7 +21,14 @@ public class DANN {
 
     //(Element query, int k, int nb_iteration, int parameters,int class_number,HashSet<Element> data)
        
-
+    /**
+     * 
+     * @param dataset
+     * @param k
+     * @param nb_iteration
+     * @param nb_parameters
+     * @param nb_classes
+     */
     public DANN(HashSet<Element> dataset, int k, int nb_iteration, int nb_parameters, int nb_classes){
         this.nb_classes=nb_classes;
         this.nb_parameters=nb_parameters;

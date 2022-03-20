@@ -1,15 +1,8 @@
-import classifier.DANN;
-import classifier.KNN;
 import elements.NumericalParser;
 import elements.Element;
-import jeigen.DenseMatrix;
-import validator.CrossValidation;
+import validator.*;
 
 import java.util.*;
-
-import static jeigen.DenseMatrix.diag;
-import static jeigen.Shortcuts.rand;
-import static jeigen.Shortcuts.spdiag;
 
 public class App {
 
@@ -54,8 +47,8 @@ public class App {
             throw new IllegalArgumentException("Le nombre de blocs ne peut pas être > à la longueur du dataset/2");
         }
 
-        CrossValidation bc = new CrossValidation(data);
-        bc.crossValidation(nb_blocs, data_parse.getParametersNumber(), data_parse.getClassNumber(), new HashSet<>(k));
+        CrossValidation2 bc = new CrossValidation2(nb_blocs,data);
+        bc.crossValidation(data_parse.getParametersNumber(), data_parse.getClassNumber(), new HashSet<>(k));
         
         // DenseMatrix query = new DenseMatrix(new double[][]{{5.6, 3, 4.5, 1.5}});
         // Element x0 = new Element(query,0);
