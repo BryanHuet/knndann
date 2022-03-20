@@ -8,6 +8,7 @@ public class App {
 
     public static void main(String[] args){
 
+        /* VERIFICATION DES INPUTS  */
 
         if(args.length == 0){
             throw new IllegalArgumentException("Usage : App < chemin fichier > < ensemble des k voisins à tester > < nombre de découpes CV >"+
@@ -17,9 +18,7 @@ public class App {
             throw new IllegalArgumentException("Le nombre d'arguments est incorrect");
         }
 
-
-        String chemin = args[0]; 
-        //int k = Integer.parseInt(args[1]);//3
+        String chemin = args[0];
 
         ArrayList<Integer> k = new ArrayList<>();
         for (String s : args[1].split(" ")) {
@@ -40,6 +39,8 @@ public class App {
             throw new IllegalArgumentException("Le nombre de blocs ne peut pas être < à 2");
         }
 
+        /* "PARSAGE" DES DONNEES */
+
         NumericalParser data_parse = new NumericalParser(chemin);
         HashSet<Element> data = data_parse.proceed();
 
@@ -47,20 +48,13 @@ public class App {
             throw new IllegalArgumentException("Le nombre de blocs ne peut pas être > à la longueur du dataset/2");
         }
 
-        CrossValidation2 bc = new CrossValidation2(nb_blocs,data);
-        bc.crossValidation(data_parse.getParametersNumber(), data_parse.getClassNumber(), new HashSet<>(k));
-        
-        // DenseMatrix query = new DenseMatrix(new double[][]{{5.6, 3, 4.5, 1.5}});
-        // Element x0 = new Element(query,0);
 
-        // DANN dann = new DANN(data, k, 3, data_parse.getParametersNumber(), data_parse.getClassNumber());
+        /* APPLICATION */
 
+        CrossValidation bc = new CrossValidation(nb_blocs,data,new HashSet<>(k),data_parse.getParametersNumber(), data_parse.getClassNumber());
+        bc.crossValidation();
+        bc.displayResults(chemin);
 
-        // System.out.println("Nombre de donnee "+data.size());
-
-        // CrossValidation cv = new CrossValidation(data);
-        // cv.crossValidation(nb_blocs,dann);
-        // System.out.println(cv.getScore());
 
 
     }
