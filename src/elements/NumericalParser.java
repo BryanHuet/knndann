@@ -11,8 +11,6 @@ import jeigen.DenseMatrix;
  * Les données extraites sont ensuite stockées dans un vecteur de type DenseMatrix de la bibliothèque jeigen.
  * Ce vecteur est enfin ajouté dans un objet de type Element qui représente un point de notre dataset.
  * La classe d'un point est représenté par un entier naturel, ajouté également dans l'objet Element.
- * @param path_to_file le chemin du fichier à parcourir.
- * @return l'ensemble des points de notre dataset.
  */
 public class NumericalParser {
 
@@ -20,10 +18,17 @@ public class NumericalParser {
     private int class_number;
     private int nb_parameters;
 
+    /**
+     *
+     * @param path_to_file le chemin du fichier à parcourir.
+     */
     public NumericalParser(String path_to_file){
         this.path_to_file = path_to_file;
     }
 
+    /**
+     * @return l'ensemble des points de notre dataset.
+     */
     public HashSet<Element> proceed(){
         HashSet<Element> iris_set = new HashSet<>();
         BufferedReader reader;

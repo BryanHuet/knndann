@@ -2,6 +2,9 @@ package elements;
 
 import jeigen.DenseMatrix;
 
+/**
+ * Description d'une donnée en un element. Le vecteur qui définie une donnée est retranscrie en une matrice DenseMatrix.
+ */
 public class Element {
 
     private DenseMatrix vector;
