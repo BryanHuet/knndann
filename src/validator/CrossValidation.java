@@ -4,6 +4,7 @@ import java.util.*;
 
 import classifier.DANN;
 import elements.Element;
+import jeigen.DenseMatrix;
 
 import static java.lang.Math.round;
 
@@ -122,7 +123,7 @@ public class CrossValidation {
      * @param classNumber le nombre de classes possibles
      */
     private void validate(ArrayList<Element> dataset, int p, int parametersNumber, int classNumber){
-        DANN dann = new DANN(new HashSet(dataset), p, NB_ITERATION, parametersNumber, classNumber);
+        DANN dann = new DANN(new HashSet<>(dataset), p, NB_ITERATION, parametersNumber, classNumber);
         for(Element query : this.test_set){
             query.setPredict(dann.proceed(query));
         }
@@ -184,7 +185,7 @@ public class CrossValidation {
             System.out.println("datafile : "+chemin);
         }
         System.out.println("data size : "+this.datasize+" | attributes number : "+this.parametersNumber+" | class number : "+this.classNumber);
-        System.out.println("k fold : "+this.k+" | k neighbourhood tested : "+this.parameters);
+        System.out.println("k fold : "+this.k+" | k neighbourhood tested : "+this.parameters+" | test set size : "+this.test_set.size());
 
         System.out.println("\n# Results");
         for (Map.Entry<Integer,Double> mapentry : this.scores.entrySet()) {
@@ -199,7 +200,8 @@ public class CrossValidation {
 
         System.out.println("\n #validation using the best k with the test set and the best training set");
         validate(this.best_training_set, bestP, parametersNumber, classNumber);
-        System.out.println("Score : "+this.score(this.test_set)+"\n");
+        System.out.println("Score : "+this.score(this.test_set));
+        System.out.println("Confusion matrix formed by a "+this.confusionMatrix());
 
     }
 
@@ -210,11 +212,51 @@ public class CrossValidation {
         this.displayResults("");
     }
 
-    // public DenseMatrix confusionMatrix(){
-    //     return ;
-    // }
+    /**
+     * Calcul de la matrice confusion sur le test_set
+     * @return La matrice de confusion en format DenseMatrix.
+     */
+     public DenseMatrix confusionMatrix(){
+        HashMap<Integer,HashMap<Integer,Integer>> predictedMatrix = new HashMap<>();
+        StringBuilder mat = new StringBuilder();
 
-    // public void auc(){
+         for(int i=0; i<this.classNumber;i++){
+             HashMap<Integer,Integer> internPredict = new HashMap<>();
+             for(int j=0; j<this.classNumber;j++){
+                 internPredict.put(j,0);
+             }
+             for (Element e: this.test_set){
+                 if (e.getClasse()==i) {
+                     if (e.getClasse() == e.getPredict()) {
+                         if (internPredict.containsKey(i)) {
+                             internPredict.put(i, internPredict.get(i) + 1);
+                         } else {
+                             internPredict.put(i, 1);
+                         }
+                     } else {
+                         if (internPredict.containsKey(e.getPredict())) {
+                             internPredict.put(e.getPredict(), internPredict.get(e.getPredict()) + 1);
+                         } else {
+                             internPredict.put(e.getPredict(), 1);
+                         }
+                     }
+                 }
+             }
+             predictedMatrix.put(i,internPredict);
+         }
+         for (Map.Entry<Integer,HashMap<Integer,Integer>> mapentry : predictedMatrix.entrySet()) {
+             //System.out.print("[ ");
+             for (Map.Entry<Integer,Integer> entry : mapentry.getValue().entrySet()) {
+                 //System.out.print(entry.getValue()+" ");
+                 mat.append(entry.getValue()).append(" ");
+             }
+             mat.append(";");
+             //System.out.println(" ]");
+         }
 
-    // }
+
+
+        return new DenseMatrix(mat.toString());
+    }
+
 }
